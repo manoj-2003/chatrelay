@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: chatrelay-jaeger
+    ports:
+      - "16686:16686"   # UI
+      - "14250:14250"   # Jaeger gRPC (legacy)
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: chatrelay-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    depends_on:
+      - jaeger
+
+  chatrelay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatrelay-bot
+    depends_on:
+      - otel-collector
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_SERVICE_NAME=chatrelay
+    restart: unless-stopped

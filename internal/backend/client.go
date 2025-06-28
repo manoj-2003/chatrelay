@@ -7,10 +7,10 @@ import (
 	"net/http"
 )
 
-// type ChatRequest struct {
-// 	UserID string `json:"user_id"`
-// 	Query  string `json:"query"`
-// }
+type ChatRequest struct {
+	UserID string `json:"user_id"`
+	Query  string `json:"query"`
+}
 
 type ChatResponse struct {
 	FullResponse string `json:"full_response"`
